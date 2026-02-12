@@ -555,6 +555,20 @@ int main(void)
     else {
         std::cout << "Krastavac OK, mesh-eva: " << cucumber.meshes.size() << std::endl;
     }
+    Model onion("objekti/luk/luk.obj");  // Promeni "luk.obj" ako se fajl zove drugačije
+    if (onion.meshes.size() == 0) {
+        std::cout << "GRESKA: Luk nije ucitan!\n";
+    }
+    else {
+        std::cout << "Luk OK, mesh-eva: " << onion.meshes.size() << std::endl;
+    }
+    Model tomato("objekti/paradajz/paradajz.obj");
+    if (tomato.meshes.size() == 0) {
+        std::cout << "GRESKA: Paradajz nije ucitan!\n";
+    }
+    else {
+        std::cout << "Paradajz OK, mesh-eva: " << tomato.meshes.size() << std::endl;
+    }
     Model cheese("objekti/sir/source/model.obj");
 
     if (cheese.meshes.size() == 0) {
@@ -603,14 +617,14 @@ int main(void)
             pattyCook.update(deltaTime);
         }
         
-
-        // 1. INPUT ZA KAMERU (STRELICE)
-        float camSpeed = 0.05f;
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    cameraPos += camSpeed * cameraFront;
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  cameraPos -= camSpeed * cameraFront;
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * camSpeed;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * camSpeed;
-
+        if (currentState == COOKING || currentState == ASSEMBLY) {
+            // 1. INPUT ZA KAMERU (STRELICE)
+            float camSpeed = 0.05f;
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)    cameraPos += camSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)  cameraPos -= camSpeed * cameraFront;
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)  cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * camSpeed;
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * camSpeed;
+        }
         float pattySpeed = 0.02f;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) pattyPos.z -= pattySpeed;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) pattyPos.z += pattySpeed;
@@ -740,6 +754,7 @@ int main(void)
         if (currentState == MENU) {
             //glDisable(GL_DEPTH_TEST);
             glUseProgram(unifiedShader);
+            glUniform1i(ignoreLightLoc, 1);
 
             glm::mat4 ortho = glm::ortho(-1.f, 1.f, -1.f, 1.f, -1.f, 1.f);
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(ortho));
@@ -750,7 +765,7 @@ int main(void)
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(buttonModel));
 
             glUniform1i(useTexLoc, 0);                     // ISKLJUČENA tekstura
-            glUniform4f(colorModLoc, 1.0f, 0.4f, 0.7f, 1.0f);
+            glUniform4f(colorModLoc, 1.0f, 0.71f, 0.76f, 1.0f);
             
 
             glBindVertexArray(buttonVAO);
@@ -1015,9 +1030,13 @@ int main(void)
                 }
                 else if (splash.type == SPLASH_2D) {
                     glm::mat4 splashTransform = glm::mat4(1.0f);
-                    splashTransform = glm::translate(splashTransform, splash.position);
+
+                    glm::vec3 raisedPos = splash.position;
+                    raisedPos.y += 0.03f;
+
+                    splashTransform = glm::translate(splashTransform, raisedPos);
                     splashTransform = glm::rotate(splashTransform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-                    splashTransform = glm::scale(splashTransform, glm::vec3(0.8f, 0.8f, 1.0f));
+                    splashTransform = glm::scale(splashTransform, glm::vec3(0.3f, 0.3f, 1.0f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(splashTransform));
                     glUniform4f(colorModLoc, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -1075,12 +1094,22 @@ int main(void)
                     glUniform4f(colorModLoc, 0.0f, 0.8f, 0.0f, 1.0f); // Zelena boja
                     cucumber.Draw();
                 }
-                // ✅ DODAJ PRIVREMENE MODELE ZA OSTALE SASTOJKE
                 else if (ing.type == ONION) {
-                    m = glm::scale(m, glm::vec3(2.0f));
+                    glm::mat4 m = glm::mat4(1.0f);
+                    m = glm::translate(m, ing.position);
+
+                    // Možda će ti trebati rotacija (probaj sve dok ne bude dobro)
+                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+                    // Podesi skalu (probaj različite vrednosti 0.001f - 0.01f)
+                    m = glm::scale(m, glm::vec3(0.12f));  // Počni sa ovim, pa podesi
+
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
-                    glUniform4f(colorModLoc, 0.9f, 0.9f, 0.7f, 1.0f); // Bež boja (luk)
-                    cucumber.Draw(); // Privremeno koristi cucumber model
+                    glUniform1i(useTexLoc, 0);
+                    glUniform1i(useVertexColorLoc, 0);
+                    glUniform4f(colorModLoc, 0.9f, 0.85f, 0.7f, 1.0f); // Bež/svetlo smeđa
+
+                    onion.Draw();
                 }
                 else if (ing.type == LETTUCE) {
                     m = glm::translate(m, glm::vec3(0.0f, 0.01f, 0.0f));
@@ -1125,10 +1154,21 @@ int main(void)
 
 
                 else if (ing.type == TOMATO) {
-                    m = glm::scale(m, glm::vec3(2.2f));
+                    glm::mat4 m = glm::mat4(1.0f);
+                    m = glm::translate(m, ing.position);
+
+                    // Možda će ti trebati rotacija
+                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+                    // Podesi skalu (verovatno slična luku)
+                    m = glm::scale(m, glm::vec3(0.025f));
+
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
+                    glUniform1i(useTexLoc, 0);
+                    glUniform1i(useVertexColorLoc, 0);
                     glUniform4f(colorModLoc, 1.0f, 0.2f, 0.2f, 1.0f); // Crvena (paradajz)
-                    cucumber.Draw();
+
+                    tomato.Draw();
                 }
                 else if (ing.type == TOP_BUN) {
                     m = glm::scale(m, glm::vec3(0.004f));
@@ -1240,12 +1280,19 @@ int main(void)
                 else if (cur == ONION) {
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
-                    m = glm::scale(m, glm::vec3(2.0f));
+
+                    // Možda će ti trebati rotacija
+                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+                    // Podesi skalu
+                    m = glm::scale(m, glm::vec3(0.12f));
+
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
                     glUniform1i(useTexLoc, 0);
                     glUniform1i(useVertexColorLoc, 0);
-                    glUniform4f(colorModLoc, 0.9f, 0.9f, 0.7f, 1.0f); // Bež (luk)
-                    cucumber.Draw();
+                    glUniform4f(colorModLoc, 0.9f, 0.85f, 0.7f, 1.0f);
+
+                    onion.Draw();
                 }
                 else if (cur == LETTUCE) {
                     glm::mat4 m = glm::mat4(1.0f);
@@ -1300,12 +1347,19 @@ int main(void)
                 else if (cur == TOMATO) {
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
-                    m = glm::scale(m, glm::vec3(2.2f));
+
+                    // Možda će ti trebati rotacija
+                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+                    // Podesi skalu
+                    m = glm::scale(m, glm::vec3(0.025f));
+
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
                     glUniform1i(useTexLoc, 0);
                     glUniform1i(useVertexColorLoc, 0);
                     glUniform4f(colorModLoc, 1.0f, 0.2f, 0.2f, 1.0f); // Crvena (paradajz)
-                    cucumber.Draw();
+
+                    tomato.Draw(); 
                 }
                 else if (cur == TOP_BUN) {
                     glm::mat4 m = glm::mat4(1.0f);

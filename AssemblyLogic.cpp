@@ -25,7 +25,7 @@ float AssemblyLogic::getHeightForType(IngredientType type) const {
     if (type == KETCHUP || type == MUSTARD) return 0.01f; // Sosovi - tanka mrlja
     if (type == PICKLES) return 0.27f;      // Krastavac
     if (type == CHEESE) return 0.08f;       // Sir
-    if (type == TOMATO) return 0.03f;       // Paradajz
+    if (type == TOMATO) return 0.05f;       // Paradajz
     if (type == LETTUCE) return 0.04f;      // Salata
     if (type == ONION) return 0.03f;        // Luk
     if (type == TOP_BUN) return 0.56f;      // ? GORNJA ZEMI?KA - pove?ana da se vidi gore

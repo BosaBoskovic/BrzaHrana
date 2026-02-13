@@ -648,31 +648,38 @@ int main(void)
                     if (cur == KETCHUP || cur == MUSTARD) {
                         glm::vec3 bottlePos = assembly.getCurrentPosition();
                         glm::vec3 stackTop = assembly.getStackTopPosition();
-
                         SauceType currentSauce = (cur == KETCHUP) ? SAUCE_KETCHUP : SAUCE_MUSTARD;
-                        
-                        float bottleTipY = bottlePos.y - 0.115f;
-                        float burgerTopY = stackTop.y;
-                        float horizontalDist = glm::length(glm::vec2(bottlePos.x - stackTop.x, bottlePos.z - stackTop.z));
-                        float verticalDist = abs(bottleTipY - burgerTopY);
 
-                        
+                        // 🔥 Zapamti koliko mrlja je BILO pre dodavanja
+                        size_t splashCountBefore = splashManager.getSplashes().size();
+
+                        // 🔥 Pokušaj da dodaš mrlju
                         bool hitBurger = splashManager.addSplash(bottlePos, stackTop, tableTopY, currentSauce);
 
-                        
-                        if (cur == KETCHUP) {
-                            std::cout << (hitBurger ? "✅ Pogodak! " : "❌ Promasaj! ") << "Donesi senf!\n";
-                            assembly.advanceToMustard();
-                        }
-                        else if (cur == MUSTARD) {
-                            std::cout << (hitBurger ? "✅ Pogodak! " : "❌ Promasaj! ") << "Idemo dalje!\n";
-                            assembly.skipToNextIngredient();
+                        // 🔥 Proveri da li je ZAISTA dodata nova mrlja
+                        size_t splashCountAfter = splashManager.getSplashes().size();
+                        bool splashWasAdded = (splashCountAfter > splashCountBefore);
 
-                            std::cout << "🔎 Nakon skipToNextIngredient:\n";
-                            std::cout << "   Trenutni sastojak: " << assembly.getCurrentType() << "\n";
-                            std::cout << "   hideCurrentBottle: " << assembly.shouldHideCurrentBottle() << "\n";
-                            glm::vec3 pos = assembly.getCurrentPosition();
-                            std::cout << "   Pozicija: (" << pos.x << ", " << pos.y << ", " << pos.z << ")\n";
+                        // ✅ NASTAVI SAMO AKO JE DODATA NOVA MRLJA
+                        if (splashWasAdded) {
+                            if (cur == KETCHUP) {
+                                std::cout << (hitBurger ? "✅ Pogodak! " : "❌ Promasaj! ") << "Donesi senf!\n";
+                                assembly.advanceToMustard();
+                            }
+                            else if (cur == MUSTARD) {
+                                std::cout << (hitBurger ? "✅ Pogodak! " : "❌ Promasaj! ") << "Idemo dalje!\n";
+                                assembly.skipToNextIngredient();
+
+                                std::cout << "🔎 Nakon skipToNextIngredient:\n";
+                                std::cout << "   Trenutni sastojak: " << assembly.getCurrentType() << "\n";
+                                std::cout << "   hideCurrentBottle: " << assembly.shouldHideCurrentBottle() << "\n";
+                                glm::vec3 pos = assembly.getCurrentPosition();
+                                std::cout << "   Pozicija: (" << pos.x << ", " << pos.y << ", " << pos.z << ")\n";
+                            }
+                        }
+                        else {
+                            // ❌ MRLJA NIJE DODATA (van stola)
+                            std::cout << "⚠️ K kliknut van stola - nastavi da pomeraš flašu!\n";
                         }
                     }
                 }
@@ -953,7 +960,7 @@ int main(void)
             glUseProgram(unifiedShader); // koristi isti shader koji si koristila za kocke/pljeskavicu
 
             glEnable(GL_DEPTH_TEST);
-            glDisable(GL_CULL_FACE); // isključi culling, jer .obj možda ima "pogrešne" normale
+            //glDisable(GL_CULL_FACE); // isključi culling, jer .obj možda ima "pogrešne" normale
 
             // Model matrica tanjira (centar + skala)
             glm::mat4 plateModel = tableModel;
@@ -972,14 +979,14 @@ int main(void)
             glUniform1i(useVertexColorLoc, 0);
             glUniform4f(colorModLoc, 1.0f, 1.0f, 1.0f, 1.0f); // Bela boja
 
-            glDisable(GL_CULL_FACE);
+            //glDisable(GL_CULL_FACE);
             glEnable(GL_DEPTH_TEST);
             plate.Draw();
             // ================= CRTANJE MRLJA =================
             for (const auto& splash : splashManager.getSplashes()) {
                 if (splash.type == SPLASH_3D) {
                     glEnable(GL_DEPTH_TEST);
-                    glDisable(GL_CULL_FACE);
+                    //glDisable(GL_CULL_FACE);
                     glUseProgram(unifiedShader);
                     updateCamera(unifiedShader, viewLoc);
                     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionP));
@@ -1159,7 +1166,7 @@ int main(void)
                 }
             }
             if (!assembly.shouldHideCurrentBottle() && !shouldSkipDrawing) {
-                glDisable(GL_CULL_FACE);
+                //glDisable(GL_CULL_FACE);
 
                 if ((cur == KETCHUP || cur == MUSTARD) ) {
                     glm::mat4 bottleModel = glm::mat4(1.0f);

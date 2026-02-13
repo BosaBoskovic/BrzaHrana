@@ -20,31 +20,28 @@ glm::vec3& AssemblyLogic::getCurrentPosition() {
 }
 
 float AssemblyLogic::getHeightForType(IngredientType type) const {
-    if (type == BOTTOM_BUN) return 0.04f;   // Donja zemi?ka
-    if (type == PATTY) return -0.32f;        // Pljeskavica
-    if (type == KETCHUP || type == MUSTARD) return 0.01f; // Sosovi - tanka mrlja
-    if (type == PICKLES) return 0.27f;      // Krastavac
-    if (type == CHEESE) return 0.08f;       // Sir
-    if (type == TOMATO) return 0.05f;       // Paradajz
-    if (type == LETTUCE) return 0.04f;      // Salata
-    if (type == ONION) return 0.03f;        // Luk
-    if (type == TOP_BUN) return 0.56f;      // ? GORNJA ZEMI?KA - pove?ana da se vidi gore
-    return 0.03f; // Default
+    if (type == BOTTOM_BUN) return 0.04f;   
+    if (type == PATTY) return -0.32f;        
+    if (type == KETCHUP || type == MUSTARD) return 0.01f; 
+    if (type == PICKLES) return 0.27f;      
+    if (type == CHEESE) return 0.08f;     
+    if (type == TOMATO) return 0.05f;      
+    if (type == LETTUCE) return 0.04f;     
+    if (type == ONION) return 0.03f;        
+    if (type == TOP_BUN) return 0.56f;      
+    return 0.03f; 
 }
 
 glm::vec3 AssemblyLogic::getStackTopPosition() const {
     glm::vec3 pos = platePos;
     pos.y += 0.25f; // Vrh tanjira
 
-    // ? DEBUG - Ispiši koliko sastojaka ima
     std::cout << "?? getStackTopPosition(): platePos.y = " << platePos.y
         << ", broj postavljenih = " << placed.size() << "\n";
 
-    // Dodaj visine sastojaka
     for (const auto& i : placed) {
         float h = i.height;
 
-        // Ako prethodni sastojak ima negativnu visinu (pljeskavica), ignoriši za sir
         if (i.type == PATTY && current == CHEESE) {
             h = 0.0f;
         }
@@ -60,7 +57,6 @@ glm::vec3 AssemblyLogic::getStackTopPosition() const {
 void AssemblyLogic::updateCurrentPosition() {
     if (locked) return;
 
-    // ? SOSOVI SE NE ZAKLJUCAVAJU AUTOMATSKI
     if (current == KETCHUP || current == MUSTARD) {
         return;
     }
@@ -68,36 +64,33 @@ void AssemblyLogic::updateCurrentPosition() {
     glm::vec3 target = getStackTopPosition();
     float h = getHeightForType(current);
 
-    // ? SVI SASTOJCI SE STAVLJAJU DIREKTNO JEDAN NA DRUGI
-    // Nema specijalnih offseta - jednostavno stack logika
+    
     target.y += h / 2.0f; // Centar sastojka na vrh steka
 
     if (current == CHEESE) {
-        target.y -= 0.09f;  // probaj 0.01f - 0.03f dok ne bude savršeno
+        target.y -= 0.09f;  
     }
     if (current == TOMATO) {
-        target.y -= 0.02f;  // probaj 0.01f - 0.03f dok ne bude savršeno
+        target.y -= 0.02f;  
     }
 
 
     float distXZ = glm::length(glm::vec2(currentPos.x - target.x, currentPos.z - target.z));
     float distY = abs(currentPos.y - target.y);
 
-    // ? AUTOMATSKO ZAKLJU?AVANJE KADA JE BLIZU
     if (distXZ <= LOCK_DISTANCE && distY <= 0.3f) {
         currentPos = target;
 
-        // ? DODAJ U placed LISTU - KRASTAVAC ?E SE SADA CRTATI KAO POSTAVLJENI SASTOJAK
         placed.push_back({
             current,
             currentPos,
-            h  // ? Sada koristi pravilnu visinu (0.15f za krastavac)
+            h  
             });
 
         std::cout << "? ZAKLJUCAN: " << current << " na ("
             << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << ") sa visinom " << h << "\n";
 
-        // ? PRE?I NA SLEDE?I SASTOJAK
+        
         current = (IngredientType)(current + 1);
 
         if (current < INGREDIENT_COUNT) {
@@ -112,9 +105,9 @@ void AssemblyLogic::updateCurrentPosition() {
             locked = true;
         }
     }
-    float cheeseOffset = 0.01f; // probaj vrednosti izme?u 0.0f i 0.05f
+    float cheeseOffset = 0.01f; 
     if (current == CHEESE) {
-        target.y += cheeseOffset; // sitno podigni sir iznad prethodnog
+        target.y += cheeseOffset; 
     }
     else {
         target.y += h / 2.0f;
@@ -146,7 +139,6 @@ bool AssemblyLogic::isCenteredAboveStack(float tolerance) const {
 void AssemblyLogic::lockCurrent() {
     glm::vec3 top = getStackTopPosition();
 
-    // KE?AP MORA DA SEDNE NA VRH
     currentPos.y = top.y;
 
     placed.push_back({ current, currentPos });
@@ -154,7 +146,6 @@ void AssemblyLogic::lockCurrent() {
     locked = true;
     hideCurrentBottle = true;
 
-    // slede?i sastojak
     if (current == BOTTOM_BUN) current = PATTY;
     else if (current == PATTY) current = KETCHUP;
     else current = MUSTARD;
@@ -169,13 +160,13 @@ bool AssemblyLogic::isKetchupPlaced() const {
 
 void AssemblyLogic::advanceToMustard() {
     if (current == KETCHUP) {
-        std::cout << "?? advanceToMustard() POZVAN!\n";
+        std::cout << " advanceToMustard() POZVAN!\n";
         current = MUSTARD;
         currentPos = getStackTopPosition() + glm::vec3(0.0f, 1.2f, 0.0f);
         locked = false;
         this->hideCurrentBottle = false;
-        std::cout << "   ? Senf postavljen na: (" << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << ")\n";
-        std::cout << "   ? hideCurrentBottle = " << hideCurrentBottle << "\n";
+        std::cout << "    Senf postavljen na: (" << currentPos.x << ", " << currentPos.y << ", " << currentPos.z << ")\n";
+        std::cout << "    hideCurrentBottle = " << hideCurrentBottle << "\n";
     }
 }
 
@@ -195,8 +186,7 @@ void AssemblyLogic::skipToNextIngredient() {
     if (current < INGREDIENT_COUNT) {
         glm::vec3 stackTop = getStackTopPosition();
 
-        // ? CENTRIRAJ SLEDE?I SASTOJAK IZNAD BURGERA
-        currentPos = stackTop + glm::vec3(0.0f, 1.0f, 0.0f);
+       currentPos = stackTop + glm::vec3(0.0f, 1.0f, 0.0f);
 
         locked = false;
         if (current != KETCHUP && current != MUSTARD) {

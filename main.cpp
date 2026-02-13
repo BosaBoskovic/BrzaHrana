@@ -138,13 +138,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     cameraFront = glm::normalize(front);
 }
 
-// 3. Callback za klik miša
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (currentState == MENU && button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        // Dobijanje veličine prozora za konverziju u NDC
         int width, height;
         glfwGetWindowSize(window, &width, &height);
 
@@ -171,7 +169,6 @@ void updateCamera(GLuint shader, GLuint viewLoc) {
 }
 
 
-// Povećaj niz da stane još par tačaka za centre poklopaca
 float pattyVertices[1500];
 
 void generatePatty() {
@@ -247,7 +244,6 @@ int main(void)
     unsigned int wWidth = mode->width;
     unsigned int wHeight = mode->height;
 
-    // Kreiranje FULL SCREEN prozora
     window = glfwCreateWindow(wWidth, wHeight, wTitle, primaryMonitor, NULL);
     glfwSetKeyCallback(window, keyCallback);
     
@@ -434,7 +430,6 @@ int main(void)
     glBindVertexArray(0);
 
     // Setup kečapa
-    //const int segments = 30;
     int ketchupVertexCount = getKetchupVertexCount(segments);
     float* ketchupVertices = new float[ketchupVertexCount * 10]; // 10 floatova po vertexu
     generateKetchup(ketchupVertices, segments);
@@ -590,7 +585,6 @@ int main(void)
     }
 
 
-    // TEST CRTANJE - da vidimo da li model uopšte radi
     std::cout << "========== TEST SPLASH MODEL ==========\n";
     for (int i = 0; i < splashModel.meshes.size(); i++) {
         std::cout << "Mesh " << i << ": vertices=" << splashModel.meshes[i].vertices.size()
@@ -657,16 +651,15 @@ int main(void)
 
                         SauceType currentSauce = (cur == KETCHUP) ? SAUCE_KETCHUP : SAUCE_MUSTARD;
                         
-                        // 1. Logika za detekciju visine i pozicije (isto kao što si imala)
                         float bottleTipY = bottlePos.y - 0.115f;
                         float burgerTopY = stackTop.y;
                         float horizontalDist = glm::length(glm::vec2(bottlePos.x - stackTop.x, bottlePos.z - stackTop.z));
                         float verticalDist = abs(bottleTipY - burgerTopY);
 
-                        // ✅ DODAJ MRLJU UVEK (bilo pogodak bilo promašaj)
+                        
                         bool hitBurger = splashManager.addSplash(bottlePos, stackTop, tableTopY, currentSauce);
 
-                        // ✅ UVEK PREĐI NA SLEDEĆI SASTOJAK (bez obzira da li je pogodio)
+                        
                         if (cur == KETCHUP) {
                             std::cout << (hitBurger ? "✅ Pogodak! " : "❌ Promasaj! ") << "Donesi senf!\n";
                             assembly.advanceToMustard();
@@ -719,7 +712,6 @@ int main(void)
             }
         }
 
-        // --- MEKANA GRANICA SA SPORETOM ---
         float pushDownLimit = pattyRestY - 0.03f; // koliko sme malo da "utone"
 
         if (pattyPos.y < pattyRestY) {
@@ -738,8 +730,6 @@ int main(void)
             glfwSetWindowShouldClose(window, GL_TRUE);
         }
 
-
-        //Mijenjanje projekcija
         if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
         {
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionP));
@@ -752,7 +742,6 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Osvjezavamo i Z bafer i bafer boje
 
         if (currentState == MENU) {
-            //glDisable(GL_DEPTH_TEST);
             glUseProgram(unifiedShader);
             glUniform1i(ignoreLightLoc, 1);
 
@@ -772,7 +761,6 @@ int main(void)
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
             glBindVertexArray(0);
-            //glEnable(GL_DEPTH_TEST);
         }
 
 
@@ -780,11 +768,9 @@ int main(void)
 
             glUseProgram(unifiedShader);
             glUniform1i(ignoreLightLoc, 1);
-            // 3. POSTAVLJANJE KAMERE(View Matrica)
             updateCamera(unifiedShader, viewLoc);
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionP));
 
-            // Formiranje model matrice
             glBindVertexArray(VAO);
             glUniform1i(useTexLoc, 0);
             glUniform1i(useVertexColorLoc, 0);
@@ -871,10 +857,9 @@ int main(void)
             glUniform1i(ignoreLightLoc, 1);
 
             // --- CRTANJE LOADING BARA (2D Overlay) ---
-            glDisable(GL_DEPTH_TEST); // Isključujemo dubinu da bar bude uvek "preko" svega
+            glDisable(GL_DEPTH_TEST); 
             glUseProgram(unifiedShader);
 
-            // Resetujemo View i Projection na Identity (tako da radimo direktno u NDC -1 do 1)
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
             glUniform1i(useTexLoc, 0);
@@ -885,10 +870,6 @@ int main(void)
 
             float progress = pattyCook.progress; // Vrednost od 0.0 do 1.0
 
-            // LOGIKA ZA SKALIRANJE S LEVA NA DESNO:
-            // Skaliranje u OpenGL-u se vrši iz koordinatnog početka (centra). 
-            // Da bi bar rastao s leva na desno, prvo ga skaliramo, 
-            // a onda ga pomerimo ulevo za polovinu onoga što je "izgubio" skaliranjem.
             glm::mat4 barModel = glm::mat4(1.0f);
             barModel = glm::translate(barModel, glm::vec3(-0.5f * (1.0f - progress), 0.0f, 0.0f));
             barModel = glm::scale(barModel, glm::vec3(progress, 1.0f, 1.0f));
@@ -904,7 +885,6 @@ int main(void)
                 currentState = ASSEMBLY;
             }
         }
-        // ASSEMBLY scena (popravljeno za vidljiv tanjir)
         else if (currentState == ASSEMBLY) {
             glUseProgram(unifiedShader);
             glUniform1i(ignoreLightLoc, 0); // PRIMENI svetlo
@@ -912,7 +892,6 @@ int main(void)
             // Kamera se pomera mišem i strelicama (kao u COOKING)
             updateCamera(unifiedShader, viewLoc);
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projectionP));
-            ///JA
             // Update uniforma svetla svaki frame
             glUseProgram(unifiedShader);
             glUniform3fv(lightPosLoc, 1, glm::value_ptr(lightPos));
@@ -951,7 +930,6 @@ int main(void)
             float offsetX = (tableWidth / 2.0f) - 0.2f;
             float offsetZ = (tableDepth / 2.0f) - 0.2f;
 
-            // Y – noga POČINJE TAČNO OD DNA PLOČE (bez razmaka!)
             float legY = -(tableThickness / 2.0f + legHeight / 2.0f);
 
             glm::vec3 legLocalPos[] = {
@@ -998,8 +976,6 @@ int main(void)
             glEnable(GL_DEPTH_TEST);
             plate.Draw();
             // ================= CRTANJE MRLJA =================
-          
-           // ================= CRTANJE MRLJA =================
             for (const auto& splash : splashManager.getSplashes()) {
                 if (splash.type == SPLASH_3D) {
                     glEnable(GL_DEPTH_TEST);
@@ -1098,11 +1074,7 @@ int main(void)
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, ing.position);
 
-                    // Možda će ti trebati rotacija (probaj sve dok ne bude dobro)
-                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-                    // Podesi skalu (probaj različite vrednosti 0.001f - 0.01f)
-                    m = glm::scale(m, glm::vec3(0.12f));  // Počni sa ovim, pa podesi
+                    m = glm::scale(m, glm::vec3(0.12f));  
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
                     glUniform1i(useTexLoc, 0);
@@ -1117,30 +1089,20 @@ int main(void)
                     // Okreni salatu na bok
                     m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-                    // Smanji veličinu
                     m = glm::scale(m, glm::vec3(0.005f));
 
-                    // Pošalji matricu u shader
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
 
-                    // Boja i shader parametri
                     glUniform1i(useTexLoc, 0);
                     glUniform1i(useVertexColorLoc, 0);
                     glUniform4f(colorModLoc, 0.0f, 1.0f, 0.0f, 1.0f);
 
-                    // Draw pravi model salate
                     lettuce.Draw();
                 }
                 else if (ing.type == CHEESE)
                 {
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, ing.position);
-
-                    //m = glm::translate(m, glm::vec3(0.0f, 0.04f, 0.0f));
-
-                    //m = glm::rotate(m, glm::radians(90.0f),
-                        //glm::vec3(1.0f, 0.0f, 0.0f));
-
                     m = glm::scale(m, glm::vec3(0.025f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
@@ -1157,10 +1119,6 @@ int main(void)
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, ing.position);
 
-                    // Možda će ti trebati rotacija
-                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-                    // Podesi skalu (verovatno slična luku)
                     m = glm::scale(m, glm::vec3(0.025f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
@@ -1265,7 +1223,6 @@ int main(void)
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
 
-                    // ✅ POVEĆAJ SKALU 100x (kao bottleModel koji ima 1.5f)
                     m = glm::scale(m, glm::vec3(3.0f));  // BILO: 0.004f → SADA: 0.4f
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
@@ -1281,11 +1238,7 @@ int main(void)
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
 
-                    // Možda će ti trebati rotacija
-                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-                    // Podesi skalu
-                    m = glm::scale(m, glm::vec3(0.12f));
+                     m = glm::scale(m, glm::vec3(0.12f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
                     glUniform1i(useTexLoc, 0);
@@ -1297,17 +1250,14 @@ int main(void)
                 else if (cur == LETTUCE) {
                     glm::mat4 m = glm::mat4(1.0f);
 
-                    // Pozicija iz AssemblyLogic
                     glm::vec3 pos = assembly.getCurrentPosition();
                     m = glm::translate(m, pos);
 
-                    // Sitno podigni da ne upada u prethodni sastojak
                     m = glm::translate(m, glm::vec3(0.0f, 0.01f, 0.0f)); // tweak po potrebi
 
                     // Okreni na bok (npr. rotacija oko X ili Z ose)
                     m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-                    // Smanji veličinu
                     m = glm::scale(m, glm::vec3(0.005f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
@@ -1323,14 +1273,6 @@ int main(void)
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
 
-                    // Malo podigni da ne upada u pljeskavicu
-                    //m = glm::translate(m, glm::vec3(0.0f, 0.05f, 0.0f));
-
-                    // Ako model leži na boku
-                    //m = glm::rotate(m, glm::radians(90.0f),
-                        //glm::vec3(1.0f, 0.0f, 0.0f));
-
-                    // Normalna veličina (ne 2.0f!)
                     m = glm::scale(m, glm::vec3(0.025f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));
@@ -1338,20 +1280,15 @@ int main(void)
                     glUniform1i(useTexLoc, 0);
                     glUniform1i(useVertexColorLoc, 0);
 
-                    // 🔥 ŽUTA BOJA SIRA
                     glUniform4f(colorModLoc, 1.0f, 0.85f, 0.1f, 1.0f);
 
-                    cheese.Draw();   // ✅ SAD JE ISPRAVNO
+                    cheese.Draw();   
                 }
 
                 else if (cur == TOMATO) {
                     glm::mat4 m = glm::mat4(1.0f);
                     m = glm::translate(m, pos);
 
-                    // Možda će ti trebati rotacija
-                    // m = glm::rotate(m, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-                    // Podesi skalu
                     m = glm::scale(m, glm::vec3(0.025f));
 
                     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(m));

@@ -9,7 +9,7 @@ enum SplashType {
     SPLASH_2D,     // 2D tekstura (na stolu)
 };
 
-enum SauceType {  // ? NOVO
+enum SauceType { 
     SAUCE_KETCHUP,
     SAUCE_MUSTARD
 };

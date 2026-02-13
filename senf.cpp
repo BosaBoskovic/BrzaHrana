@@ -16,7 +16,7 @@ void generateSenf(float* senfVertices, int segments) {
         float x = cos(angle) * radius;
         float z = sin(angle) * radius;
 
-        // Gornja ta?ka
+        // Gornja tacka
         senfVertices[idx++] = x;
         senfVertices[idx++] = cylinderHeight;
         senfVertices[idx++] = z;
@@ -25,7 +25,7 @@ void generateSenf(float* senfVertices, int segments) {
         senfVertices[idx++] = x; senfVertices[idx++] = 0.0f;
         senfVertices[idx++] = z;
 
-        // Donja ta?ka
+        // Donja tacka
         senfVertices[idx++] = x;
         senfVertices[idx++] = 0.0f;
         senfVertices[idx++] = z;

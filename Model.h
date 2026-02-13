@@ -7,7 +7,7 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include "Util.h"  // OBAVEZNO - za loadImageToTexture funkciju!
+#include "Util.h"  
 
 struct Vertex {
     glm::vec3 Position;
@@ -19,7 +19,7 @@ struct Mesh {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     unsigned int VAO, VBO, EBO;
-    unsigned int textureID;  // <--- OVO TI FALI!
+    unsigned int textureID;  
 
     void setupMesh() {
         glGenVertexArrays(1, &VAO);
@@ -33,19 +33,15 @@ struct Mesh {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-        // Position (lokacija 0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         glEnableVertexAttribArray(0);
 
-        // Color DUMMY (lokacija 1) - jer tvoj shader o?ekuje boju ovde
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+         glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
         glEnableVertexAttribArray(1);
 
-        // TexCoords (lokacija 2)
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
         glEnableVertexAttribArray(2);
 
-        // Normal (lokacija 3)
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
         glEnableVertexAttribArray(3);
 
@@ -53,7 +49,6 @@ struct Mesh {
     }
 
     void Draw() {
-        // AKTIVIRAJ TEKSTURU PRE CRTANJA!
         if (textureID != 0) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, textureID);
@@ -63,7 +58,6 @@ struct Mesh {
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
-        // O?isti teksturu
         if (textureID != 0) {
             glBindTexture(GL_TEXTURE_2D, 0);
         }
@@ -114,7 +108,7 @@ private:
 
     Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
         Mesh myMesh;
-        myMesh.textureID = 0;  // INICIJALIZUJ NA 0!
+        myMesh.textureID = 0;  
 
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             Vertex vertex;
@@ -137,7 +131,6 @@ private:
                 myMesh.indices.push_back(face.mIndices[j]);
         }
 
-        // ====== U?ITAVANJE TEKSTURE ====== 
         if (mesh->mMaterialIndex >= 0) {
             aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 

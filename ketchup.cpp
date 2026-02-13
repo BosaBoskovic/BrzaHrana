@@ -11,7 +11,7 @@ void generateKetchup(float* ketchupVertices, int segments) {
     float r = 1.0f, g = 0.0f, b = 0.0f, a = 1.0f;
 
     // ========== VALJAK (TELO) ==========
-    // 1. OMOTA? VALJKA (Triangle Strip)
+    // 1. OMOTAC VALJKA 
     for (int i = 0; i <= segments; i++) {
         float angle = (float)i / segments * 2.0f * 3.14159f;
         float x = cos(angle) * radius;
@@ -26,7 +26,7 @@ void generateKetchup(float* ketchupVertices, int segments) {
         ketchupVertices[idx++] = x; ketchupVertices[idx++] = 0.0f;
         ketchupVertices[idx++] = z; // Normal
 
-        // Donja ta?ka
+        // Donja tacka
         ketchupVertices[idx++] = x;
         ketchupVertices[idx++] = 0.0f;
         ketchupVertices[idx++] = z;
@@ -120,10 +120,7 @@ void generateKetchup(float* ketchupVertices, int segments) {
 }
 
 int getKetchupVertexCount(int segments) {
-    // Omota?: (segments+1)*2
-    // Gornji poklopac: segments+2
-    // Donji poklopac: segments+2
-    // Kupa: segments*3
+    
     return (segments + 1) * 2 + (segments + 2) + (segments + 2) + segments * 3;
 }
 
@@ -135,7 +132,6 @@ unsigned int setupKetchupBuffers(const float* vertices, int vertexCount) {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    // 10 floatova po vertexu: Pos(3), Color(4), Normal(3)
     glBufferData(GL_ARRAY_BUFFER, vertexCount * 10 * sizeof(float), vertices, GL_STATIC_DRAW);
 
     unsigned int stride = 10 * sizeof(float);
@@ -159,7 +155,7 @@ unsigned int setupKetchupBuffers(const float* vertices, int vertexCount) {
 }
 
 void drawKetchup(int segments) {
-    // Omota? valjka
+    // Omotac valjka
     glDrawArrays(GL_TRIANGLE_STRIP, 0, (segments + 1) * 2);
 
     // Gornji poklopac

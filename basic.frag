@@ -16,8 +16,6 @@ uniform float lightIntensity;
 uniform bool lightEnabled;
 
 uniform vec3 viewPos;
-
-// NOVO: preska?emo svetlo kad je true
 uniform bool ignoreLight;
 
 in vec3 FragPos;
@@ -39,7 +37,6 @@ void main()
 
     vec4 finalColor = baseColor * uColorMod;
 
-    // Ako je svetlo ON i ne ignorišemo ga
     if(lightEnabled && !ignoreLight)
     {
         vec3 norm = normalize(Normal);

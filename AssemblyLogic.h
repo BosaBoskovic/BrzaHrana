@@ -29,7 +29,6 @@ public:
     IngredientType getCurrentType() const;
     glm::vec3& getCurrentPosition();
 
-    // Automatsko zaklju?avanje kada do?e blizuStackTop pozicije
     void updateCurrentPosition();
 
     glm::vec3 getStackTopPosition() const;
@@ -45,9 +44,9 @@ public:
     bool isCenteredAboveStack(float tolerance = 0.1f) const;
     void lockCurrent();
 
-    bool isKetchupPlaced() const;  // Provera da li je ke?ap ve? stavljen
+    bool isKetchupPlaced() const; 
     void advanceToMustard();
-    void skipToNextIngredient();  // Presko?i trenutni sastojak
+    void skipToNextIngredient();  
     bool shouldHideCurrentBottle() const;
     void hideBottle();
     void showBottle() { hideCurrentBottle = false; }
@@ -57,7 +56,7 @@ private:
     glm::vec3 platePos;             // CENTAR TANJIRA (3D)
     std::vector<Ingredient> placed;
 
-    bool locked = false;            // Da li je trenutni sastojak zaklju?an
+    bool locked = false;            
     bool hideCurrentBottle = false;
 
     float getHeightForType(IngredientType type) const;
